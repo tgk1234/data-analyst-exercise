@@ -1,0 +1,26 @@
+
+---I first created each of the tables & imported the data   
+
+CREATE TABLE continent_map (
+    country_code VARCHAR(9),
+    continent_code VARCHAR(50)
+);
+
+
+CREATE TABLE countries (
+    country_code VARCHAR(9),
+    country_name VARCHAR(250)
+);
+
+
+CREATE TABLE continents (
+    continent_code VARCHAR(9),
+    continent_name VARCHAR(50)
+);
+
+
+CREATE TABLE per_capita (
+    country_code VARCHAR(9),
+    year VARCHAR,
+    gdp_per_capita INTEGER
+);
