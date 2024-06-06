@@ -1,0 +1,29 @@
+SELECT
+Year
+,Continent
+,ROUND(AVG(gdp_per_capita),2) AS Median_GDP_Per_Capita
+
+from (
+SELECT
+pc.year as Year
+,pc.gdp_per_capita
+,con.continent_name as Continent
+,ROW_NUMBER() OVER (PARTITION BY pc.year, con.continent_name ORDER BY pc.gdp_per_capita ASC) AS RowAsc
+,ROW_NUMBER() OVER (PARTITION BY pc.year, con.continent_name ORDER BY pc.gdp_per_capita DESC) AS RowDesc
+
+FROM per_capita as pc
+
+JOIN continent_map as cm 
+ON pc.country_code = cm.country_code
+
+JOIN continents as con 
+ON  con.continent_code = cm.continent_code
+
+WHERE 1=1
+and pc.year BETWEEN 2004 and 2012
+
+) as a
+
+WHERE  RowAsc IN (RowDesc, RowDesc - 1, RowDesc + 1)
+GROUP BY Year, Continent
+
