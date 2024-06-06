@@ -1,0 +1,182 @@
+
+---I first created each of the tables & imported the data   
+
+CREATE TABLE continent_map (
+    country_code VARCHAR(9),
+    continent_code VARCHAR(50)
+);
+
+
+CREATE TABLE countries (
+    country_code VARCHAR(9),
+    country_name VARCHAR(250)
+);
+
+
+CREATE TABLE continents (
+    continent_code VARCHAR(9),
+    continent_name VARCHAR(50)
+);
+
+
+CREATE TABLE per_capita (
+    country_code VARCHAR(9),
+    year VARCHAR,
+    gdp_per_capita INTEGER
+);
+
+
+
+
+---Q1
+SELECT 
+case when country_code is null then 'N/A' else country_code
+end as country_code 
+ 
+FROM continent_map as cm
+
+GROUP BY country_code
+
+HAVING COUNT(*) > 1
+order by CASE WHEN country_code IS NULL THEN 0 ELSE 1 END,country_code ASC
+
+
+
+
+---Q2
+
+SELECT
+RANK()OVER (ORDER BY ((pc12.gdp_per_capita - pc11.gdp_per_capita) / pc11.gdp_per_capita) DESC) as Rank
+,co.country_name as Country_Name
+,co.country_code as Country_Code
+,continent_name as Continent
+,ROUND(((pc12.gdp_per_capita - pc11.gdp_per_capita) / pc11.gdp_per_capita) * 100,2) as Growth_Percent
+
+FROM per_capita as pc11
+
+JOIN per_capita as pc12 
+ON pc11.country_code = pc12.country_code 
+AND pc12.year = 2012
+
+JOIN continent_map as cm 
+ON pc11.country_code = cm.country_code
+
+JOIN countries as co 
+ON pc11.country_code =co.country_code
+
+JOIN continents as con 
+ON  con.continent_code = cm.continent_code
+
+WHERE 1=1
+and pc11.year = 2011
+ORDER BY growth_percent DESC
+LIMIT  10 
+
+
+
+
+---Q3
+
+SELECT
+Area
+,ROUND(SUM(a.gdp_per_capita) / GDP_Total * 100,2) as Percent
+
+FROM 
+(
+SELECT
+pc.gdp_per_capita
+,CASE WHEN cm.continent_code = 'NA' THEN 'North America'
+WHEN cm.continent_code = 'EU' THEN 'Europe'
+ELSE 'Rest of the World' end as area
+
+FROM per_capita as pc
+
+ JOIN continent_map as cm 
+ON pc.country_code = cm.country_code
+
+JOIN continents as con 
+ON  con.continent_code = cm.continent_code
+
+WHERE pc.year = 2012
+
+) as a
+
+  JOIN  
+(
+SELECT 
+SUM( gdp_per_capita) as GDP_Total
+
+FROM per_capita as pc
+
+ JOIN continent_map as cm 
+ON pc.country_code = cm.country_code
+
+JOIN continents as con 
+ON  con.continent_code = cm.continent_code
+
+WHERE year = 2012
+
+) as b
+
+GROUP BY Area
+
+--select * from per_capita
+
+--select count( country_code)  from per_capita 
+
+--WHERE year = 2012
+
+
+
+---Q4
+
+SELECT
+pc.year as Year
+,con.continent_name as Continent
+,ROUND(SUM(pc.gdp_per_capita) / COUNT(pc.country_code),2) as AvG_GDP_Per_Capita
+
+FROM per_capita as pc
+
+JOIN continent_map as cm 
+ON pc.country_code = cm.country_code
+
+JOIN continents as con 
+ON  con.continent_code = cm.continent_code
+
+WHERE 1=1
+and pc.year BETWEEN 2004 AND 2012
+
+GROUP BY pc.year, con.continent_name
+ORDER BY pc.year
+
+
+
+---Q5
+SELECT
+Year
+,Continent
+,ROUND(AVG(gdp_per_capita),2) AS Median_GDP_Per_Capita
+
+from (
+SELECT
+pc.year as Year
+,pc.gdp_per_capita
+,con.continent_name as Continent
+,ROW_NUMBER() OVER (PARTITION BY pc.year, con.continent_name ORDER BY pc.gdp_per_capita ASC) AS RowAsc
+,ROW_NUMBER() OVER (PARTITION BY pc.year, con.continent_name ORDER BY pc.gdp_per_capita DESC) AS RowDesc
+
+FROM per_capita as pc
+
+JOIN continent_map as cm 
+ON pc.country_code = cm.country_code
+
+JOIN continents as con 
+ON  con.continent_code = cm.continent_code
+
+WHERE 1=1
+and pc.year BETWEEN 2004 and 2012
+
+) as a
+
+WHERE  RowAsc IN (RowDesc, RowDesc - 1, RowDesc + 1)
+GROUP BY Year, Continent

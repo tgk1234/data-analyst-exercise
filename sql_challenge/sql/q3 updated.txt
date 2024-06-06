@@ -1,0 +1,48 @@
+SELECT
+Area
+,ROUND(SUM(a.gdp_per_capita) / GDP_Total * 100,2) as Percent
+
+FROM 
+(
+SELECT
+pc.gdp_per_capita
+,CASE WHEN cm.continent_code = 'NA' THEN 'North America'
+WHEN cm.continent_code = 'EU' THEN 'Europe'
+ELSE 'Rest of the World' end as area
+
+FROM per_capita as pc
+
+ JOIN continent_map as cm 
+ON pc.country_code = cm.country_code
+
+JOIN continents as con 
+ON  con.continent_code = cm.continent_code
+
+WHERE pc.year = 2012
+
+) as a
+
+  JOIN  
+(
+SELECT 
+SUM( gdp_per_capita) as GDP_Total
+
+FROM per_capita as pc
+
+ JOIN continent_map as cm 
+ON pc.country_code = cm.country_code
+
+JOIN continents as con 
+ON  con.continent_code = cm.continent_code
+
+WHERE year = 2012
+
+) as b
+
+GROUP BY Area
+
+--select * from per_capita
+
+--select count( country_code)  from per_capita 
+
+--WHERE year = 2012
