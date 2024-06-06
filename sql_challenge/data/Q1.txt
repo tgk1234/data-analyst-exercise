@@ -1,0 +1,17 @@
+SELECT 
+case when country_code is null then 'N/A' else country_code
+end as country_code 
+ 
+FROM continent_map as cm
+
+GROUP BY country_code
+
+HAVING COUNT(*) > 1
+order by CASE WHEN country_code IS NULL THEN 0 ELSE 1 END,country_code ASC
+
+
+
+
+
+
+

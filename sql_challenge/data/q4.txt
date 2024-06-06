@@ -1,0 +1,21 @@
+SELECT
+pc.year as Year
+,con.continent_name as Continent
+,ROUND(SUM(pc.gdp_per_capita) / COUNT(pc.country_code),2) as AvG_GDP_Per_Capita
+
+FROM per_capita as pc
+
+JOIN continent_map as cm 
+ON pc.country_code = cm.country_code
+
+JOIN continents as con 
+ON  con.continent_code = cm.continent_code
+
+WHERE 1=1
+and pc.year BETWEEN 2004 AND 2012
+
+GROUP BY pc.year, con.continent_name
+ORDER BY pc.year
+
+
+

@@ -1,0 +1,27 @@
+
+SELECT
+RANK()OVER (ORDER BY ((pc12.gdp_per_capita - pc11.gdp_per_capita) / pc11.gdp_per_capita) DESC) as Rank
+,co.country_name as Country_Name
+,co.country_code as Country_Code
+,continent_name as Continent
+,ROUND(((pc12.gdp_per_capita - pc11.gdp_per_capita) / pc11.gdp_per_capita) * 100,2) as Growth_Percent
+
+FROM per_capita as pc11
+
+JOIN per_capita as pc12 
+ON pc11.country_code = pc12.country_code 
+AND pc12.year = 2012
+
+JOIN continent_map as cm 
+ON pc11.country_code = cm.country_code
+
+JOIN countries as co 
+ON pc11.country_code =co.country_code
+
+JOIN continents as con 
+ON  con.continent_code = cm.continent_code
+
+WHERE 1=1
+and pc11.year = 2011
+ORDER BY growth_percent DESC
+LIMIT  10 
